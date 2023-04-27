@@ -1,39 +1,8 @@
-import { useReducer } from "react";
-import { Home } from "./components/Home";
-import { MyPlaylists } from "./components/MyPlaylists";
-import { Playlist } from "./components/Playlist";
-import { Header } from "./components/Header";
-import { HashRouter, Routes, Route } from "react-router-dom";
-
-function App() {
-  return (
-    <HashRouter>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/myplaylists" element={<MyPlaylists />} />
-        <Route path="/playlist" element={<Playlist />} />
-      </Routes>
-    </HashRouter>
-  );
-}
-export default App;
-
-/* import "./App.css";
 import React from "react";
 import { useState, useEffect } from "react";
-import {
-  Card,
-  Stack,
-  Typography,
-  TextField,
-  Box,
-  Autocomplete,
-} from "@mui/material";
+import { Card, Stack, Typography, TextField, Box } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import SearchIcon from "@mui/icons-material/Search";
-import logo from "./logo.png";
 
 function SongCard({ trackId }) {
   const [song, setSong] = useState({});
@@ -185,44 +154,7 @@ function Artist({ artistId }) {
   );
 }
 
-function App() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const handleSearch = (event) => {
-    if (!isTyping) {
-      setIsTyping(true);
-    }
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-
-    fetch(`https://deezerdevs-deezer.p.rapidapi.com/search?q=${searchTerm}`, {
-      method: "GET",
-      headers: {
-        "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
-        "x-rapidapi-key": "3a94049d35msh0452214c605abdep14fc02jsnea0066057b93",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const results = data.data.map((result) => {
-          return {
-            id: result.id,
-            title: result.title,
-            artist: result.artist.name,
-            albumCover: result.album ? result.album.cover_small : null,
-          };
-        });
-        setSearchResults(results);
-      })
-      .catch((error) => console.error(error));
-  };
-
-  const handleInputChange = (event) => {
-    handleSearch(event);
-  };
-
+export function Home() {
   const [currentStack, setCurrentStack] = useState(1);
 
   const handleBackClick = () => {
@@ -241,4 +173,73 @@ function App() {
           overflowY: "scroll",
           //backgroundColor: "#e1e5eb",
         }}
-      > */
+      > */}
+      <Typography
+        variant="h3"
+        fontWeight={"bold"}
+        sx={{ marginLeft: "10%", marginBottom: "4%", marginTop: "5%" }}
+      >
+        Featured Songs
+      </Typography>
+      <Stack direction={"row"} spacing={10} sx={{ justifyContent: "center" }}>
+        <FeatCard1 />
+        <FeatCard5 />
+        <FeatCard2 />
+      </Stack>
+      <br />
+      <br />
+      <br />
+      <Stack direction={"row"} spacing={10} sx={{ justifyContent: "center" }}>
+        <FeatCard4 />
+        <FeatCard3 />
+        <FeatCard6 />
+      </Stack>
+      <Typography
+        variant="h3"
+        fontWeight={"bold"}
+        sx={{ marginLeft: "10%", marginBottom: "4%", marginTop: "5%" }}
+      >
+        Featured Artists
+      </Typography>
+      <>
+        {currentStack === 1 && (
+          <Stack
+            direction={"row"}
+            spacing={10}
+            sx={{ justifyContent: "center" }}
+          >
+            <ArrowBackIosIcon fontSize="large" onClick={handleBackClick} />
+            <Artist artistId={38} />
+            <Artist artistId={13} />
+            <Artist artistId={5561066} />
+            <ArrowForwardIosIcon
+              fontSize="large"
+              onClick={handleForwardClick}
+            />
+          </Stack>
+        )}
+
+        {currentStack === 2 && (
+          <Stack
+            direction={"row"}
+            spacing={10}
+            sx={{ justifyContent: "center" }}
+          >
+            <ArrowBackIosIcon fontSize="large" onClick={handleBackClick} />
+            <Artist artistId={763} />
+            <Artist artistId={84324} />
+            <Artist artistId={254617} />
+            <ArrowForwardIosIcon
+              fontSize="large"
+              onClick={handleForwardClick}
+            />
+          </Stack>
+        )}
+        <br />
+        <br />
+        <br />
+      </>
+      {/* </Box> */}
+    </div>
+  );
+}
