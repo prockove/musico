@@ -1,115 +1,87 @@
-import { useState, useEffect } from "react";
-import { TextField, Autocomplete } from "@mui/material";
-import logo from "../images/logo.png";
-import SearchIcon from "@mui/icons-material/Search";
+import * as React from "react";
+import { AppBar, Box, Typography, Menu, Button, MenuItem } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import HomeIcon from "@mui/icons-material/Home";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import logo from "../images/header_logo.png";
+
+const homePage = {
+  name: "Home",
+  path: "/",
+};
+
+const myplaylists = {
+  name: "MyPlaylists",
+  path: "/myplaylists",
+};
+
+const playlist = {
+  name: "Playlist",
+  path: "/playlist",
+};
 
 export function Header() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const handleSearch = (event) => {
-    if (!isTyping) {
-      setIsTyping(true);
-    }
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-
-    fetch(`https://deezerdevs-deezer.p.rapidapi.com/search?q=${searchTerm}`, {
-      method: "GET",
-      headers: {
-        "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
-        "x-rapidapi-key": "3a94049d35msh0452214c605abdep14fc02jsnea0066057b93",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const results = data.data.map((result) => {
-          return {
-            id: result.id,
-            title: result.title,
-            artist: result.artist.name,
-            albumCover: result.album ? result.album.cover_small : null,
-          };
-        });
-        setSearchResults(results);
-      })
-      .catch((error) => console.error(error));
-  };
-
-  const handleInputChange = (event) => {
-    handleSearch(event);
-  };
+  const navigate = useNavigate();
 
   return (
-    <div style={{ position: "relative" }}>
-      <img src={logo} width={"100%"} alt="Logo" />
-      <div
+    <AppBar
+      position="relative"
+      style={{
+        display: "flex",
+        backgroundColor: "black",
+        flexDirection: "row",
+        justifyContent: "space-between",
+      }}
+    >
+      <img
+        src={logo}
+        alt="Logo"
+        width={"12%"}
+        height={"25%"}
+        style={{ alignSelf: "center", marginLeft: "10px" }}
+        onClick={() => navigate(homePage.path)}
+      />
+      <Box
         style={{
-          position: "absolute",
-          top: "70%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
+          display: "flex",
+          flexDirection: "row",
+          alignSelf: "flex-end",
+          margin: "10px",
         }}
       >
-        <div
+        <Box
           style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            paddingTop: "2rem",
+            flexGrow: 1,
+            borderRight: "1px solid #ccc",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Autocomplete
-              id="search-box"
-              freeSolo
-              options={searchResults.map((result) => ({
-                title: result.title,
-                albumCover: result.album ? result.album.cover_small : null,
-              }))}
-              style={{ width: "500px" }}
-              inputValue={searchTerm}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  margin="normal"
-                  variant="filled"
-                  InputProps={{
-                    ...params.InputProps,
-                    type: "search",
-                    style: { backgroundColor: "white" },
-                    startAdornment: !isTyping && (
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <SearchIcon fontSize="large" />
-                        <span style={{ marginLeft: 5 }}>
-                          Search title, artist, keyword...
-                        </span>
-                      </div>
-                    ),
-                  }}
-                  onChange={(event) => handleSearch(event)}
-                />
-              )}
-              getOptionLabel={(option) => option.title}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <img
-                      src={option.albumCover}
-                      alt="Album cover"
-                      height="50"
-                      width="50"
-                    />
-                    <div style={{ marginLeft: 10 }}>{option.title}</div>
-                  </div>
-                </li>
-              )}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+          <HomeIcon
+            key={homePage.name}
+            onClick={() => navigate(homePage.path)}
+            sx={{
+              color: "white",
+              marginRight: "10px",
+            }}
+            fontSize="large"
+          />
+        </Box>
+        <MusicNoteIcon
+          key={myplaylists.name}
+          onClick={() => navigate(myplaylists.path)}
+          sx={{
+            color: "white",
+            marginLeft: "10px",
+          }}
+          fontSize="large"
+        />
+        <Typography
+          marginRight={"25px"}
+          style={{ alignSelf: "center" }}
+          onClick={() => navigate(myplaylists.path)}
+        >
+          My Playlists
+        </Typography>
+      </Box>
+    </AppBar>
   );
 }

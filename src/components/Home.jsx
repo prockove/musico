@@ -1,8 +1,163 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Card, Stack, Typography, TextField, Box } from "@mui/material";
+import {
+  Card,
+  Stack,
+  Typography,
+  TextField,
+  Box,
+  Autocomplete,
+  Avatar,
+} from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import SearchIcon from "@mui/icons-material/Search";
+import logo from "../images/logo.png";
+
+function NowPlaying({ trackId }) {
+  const [song, setSong] = useState({});
+
+  useEffect(() => {
+    fetch(`https://deezerdevs-deezer.p.rapidapi.com/track/${trackId}`, {
+      method: "GET",
+      headers: {
+        "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
+        "x-rapidapi-key": "3a94049d35msh0452214c605abdep14fc02jsnea0066057b93",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setSong(data);
+      })
+      .catch((error) => console.log(error));
+  }, [trackId]);
+
+  const renderCard = () => {
+    if (!song) {
+      return null;
+    }
+    return (
+      <div>
+        {song ? (
+          <SongCard
+            trackId={song.id}
+            title={song.title}
+            artist={song.artist}
+            coverUrl={song.preview}
+          />
+        ) : (
+          <p>Loading...</p>
+        )}
+      </div>
+    );
+  };
+  return renderCard();
+}
+
+function SearchBar() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const handleSearch = (event) => {
+    if (!isTyping) {
+      setIsTyping(true);
+    }
+    const searchTerm = event.target.value;
+    setSearchTerm(searchTerm);
+
+    fetch(`https://deezerdevs-deezer.p.rapidapi.com/search?q=${searchTerm}`, {
+      method: "GET",
+      headers: {
+        "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
+        "x-rapidapi-key": "3a94049d35msh0452214c605abdep14fc02jsnea0066057b93",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const results = data.data.map((result) => {
+          return {
+            id: result.id,
+            title: result.title,
+            artist: result.artist.name,
+            albumCover: result.album ? result.album.cover_small : null,
+            preview: result.preview,
+          };
+        });
+        setSearchResults(results);
+      })
+      .catch((error) => console.error(error));
+  };
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingTop: "2rem",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <Autocomplete
+          id="search-box"
+          freeSolo
+          options={searchResults.map((result) => ({
+            title: result.title,
+            albumCover: result.album ? searchResults.album.cover_small : null,
+          }))}
+          style={{ width: "500px" }}
+          getOptionLabel={(songChoice) => songChoice.title}
+          inputValue={searchTerm}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              margin="normal"
+              variant="filled"
+              InputProps={{
+                ...params.InputProps,
+                type: "search",
+                style: { backgroundColor: "white" },
+                startAdornment: !isTyping && (
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <SearchIcon fontSize="large" />
+                    <span style={{ marginLeft: 5 }}>
+                      Search title, artist, keyword...
+                    </span>
+                  </div>
+                ),
+              }}
+              onChange={(event) => handleSearch(event)}
+            />
+          )}
+          renderOption={(props, songChoice) => (
+            <li {...props} onClick={() => setSearchTerm(songChoice.title)}>
+              <Box sx={{ display: "flex", alignItems: "center" }} {...props}>
+                <Avatar
+                  src={songChoice.albumCover}
+                  sx={{ marginRight: "10px", borderRadius: "0" }}
+                />
+                <Typography>{songChoice.title}</Typography>
+              </Box>
+              {/* <div style={{ display: "flex", alignItems: "center" }}>
+                <img
+                  src={option.albumCover}
+                  alt="Album cover"
+                  height="50"
+                  width="50"
+                />
+                <div style={{ marginLeft: 10 }}>{option.title}</div>
+              </div>
+              {option.id === selectedTrackId && (
+                <NowPlaying trackId={option.id} />
+              )} */}
+            </li>
+          )}
+        />
+      </div>
+    </div>
+  );
+}
 
 function SongCard({ trackId }) {
   const [song, setSong] = useState({});
@@ -174,6 +329,9 @@ export function Home() {
           //backgroundColor: "#e1e5eb",
         }}
       > */}
+
+      <img src={logo} alt="Logo" width={"100%"} />
+      <SearchBar />
       <Typography
         variant="h3"
         fontWeight={"bold"}
