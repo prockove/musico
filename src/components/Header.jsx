@@ -15,11 +15,6 @@ const myplaylists = {
   path: "/myplaylists",
 };
 
-const playlist = {
-  name: "Playlist",
-  path: "/playlist",
-};
-
 export function Header() {
   const navigate = useNavigate();
 

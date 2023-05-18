@@ -7,18 +7,40 @@ import {
   TextField,
   Box,
   Autocomplete,
-  Avatar,
 } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import SearchIcon from "@mui/icons-material/Search";
 import logo from "../images/logo.png";
+import deezer_black_logo from "../images/deezer_black_logo.png";
+import PlayIcon from "@mui/icons-material/PlayCircleOutline";
 
-function NowPlaying({ trackId }) {
-  const [song, setSong] = useState({});
+function FetchSongIdFromTitle({ songTitle }) {
+  const [songId, setSongId] = useState({});
 
   useEffect(() => {
-    fetch(`https://deezerdevs-deezer.p.rapidapi.com/track/${trackId}`, {
+    fetch(`https://deezerdevs-deezer.p.rapidapi.com/search?q=${songTitle}`, {
+      method: "GET",
+      headers: {
+        "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
+        "x-rapidapi-key": "3a94049d35msh0452214c605abdep14fc02jsnea0066057b93",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setSongId(data[0].id);
+      })
+      .catch((error) => console.log(error));
+  }, [songTitle]);
+  return songId;
+}
+
+function FetchSong({ title }) {
+  const [song, setSong] = useState({});
+  const songId = <FetchSongIdFromTitle songTitle={title} />;
+
+  useEffect(() => {
+    fetch(`https://deezerdevs-deezer.p.rapidapi.com/track/${songId}`, {
       method: "GET",
       headers: {
         "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
@@ -30,133 +52,87 @@ function NowPlaying({ trackId }) {
         setSong(data);
       })
       .catch((error) => console.log(error));
-  }, [trackId]);
+  }, [songId]);
 
-  const renderCard = () => {
-    if (!song) {
-      return null;
-    }
-    return (
-      <div>
-        {song ? (
-          <SongCard
-            trackId={song.id}
-            title={song.title}
-            artist={song.artist}
-            coverUrl={song.preview}
-          />
-        ) : (
-          <p>Loading...</p>
-        )}
-      </div>
-    );
-  };
-  return renderCard();
+  return song;
 }
 
-function SearchBar() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const handleSearch = (event) => {
-    if (!isTyping) {
-      setIsTyping(true);
-    }
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-
-    fetch(`https://deezerdevs-deezer.p.rapidapi.com/search?q=${searchTerm}`, {
-      method: "GET",
-      headers: {
-        "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
-        "x-rapidapi-key": "3a94049d35msh0452214c605abdep14fc02jsnea0066057b93",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const results = data.data.map((result) => {
-          return {
-            id: result.id,
-            title: result.title,
-            artist: result.artist.name,
-            albumCover: result.album ? result.album.cover_small : null,
-            preview: result.preview,
-          };
-        });
-        setSearchResults(results);
-      })
-      .catch((error) => console.error(error));
-  };
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        paddingTop: "2rem",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <Autocomplete
-          id="search-box"
-          freeSolo
-          options={searchResults.map((result) => ({
-            title: result.title,
-            albumCover: result.album ? searchResults.album.cover_small : null,
-          }))}
-          style={{ width: "500px" }}
-          getOptionLabel={(songChoice) => songChoice.title}
-          inputValue={searchTerm}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              margin="normal"
-              variant="filled"
-              InputProps={{
-                ...params.InputProps,
-                type: "search",
-                style: { backgroundColor: "white" },
-                startAdornment: !isTyping && (
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <SearchIcon fontSize="large" />
-                    <span style={{ marginLeft: 5 }}>
-                      Search title, artist, keyword...
-                    </span>
-                  </div>
-                ),
-              }}
-              onChange={(event) => handleSearch(event)}
-            />
-          )}
-          renderOption={(props, songChoice) => (
-            <li {...props} onClick={() => setSearchTerm(songChoice.title)}>
-              <Box sx={{ display: "flex", alignItems: "center" }} {...props}>
-                <Avatar
-                  src={songChoice.albumCover}
-                  sx={{ marginRight: "10px", borderRadius: "0" }}
-                />
-                <Typography>{songChoice.title}</Typography>
-              </Box>
-              {/* <div style={{ display: "flex", alignItems: "center" }}>
-                <img
-                  src={option.albumCover}
-                  alt="Album cover"
-                  height="50"
-                  width="50"
-                />
-                <div style={{ marginLeft: 10 }}>{option.title}</div>
-              </div>
-              {option.id === selectedTrackId && (
-                <NowPlaying trackId={option.id} />
-              )} */}
-            </li>
-          )}
+function NowPlayingImage({ song }) {
+  const renderImg = () => {
+    if (song) {
+      return <img src={song.albumCover} alt={song.title} />;
+    } else {
+      return (
+        <img
+          src="https://e-cdns-images.dzcdn.net/images/cover/ab0c27773900dc370917797a8f53d349/250x250-000000-80-0-0.jpg"
+          alt="Toy Cover Image"
         />
-      </div>
-    </div>
-  );
+      );
+    }
+  };
+
+  return renderImg();
+}
+
+function NowPlayingAudio({ song }) {
+  if (song) {
+    return (
+      <audio
+        src={song.preview}
+        controls
+        style={{
+          width: "500px",
+          height: "70px",
+          border: "2px solid black",
+          borderRadius: 30,
+          marginTop: "50",
+        }}
+      ></audio>
+    );
+  } else {
+    return (
+      <audio
+        src="https://cdns-preview-9.dzcdn.net/stream/c-92ba90e4b9987594aefea3610bfd2c9a-5.mp3"
+        controls
+        style={{
+          width: "500px",
+          height: "70px",
+          border: "2px solid black",
+          borderRadius: 30,
+          marginTop: "50",
+        }}
+      ></audio>
+    );
+  }
+}
+
+function NowPlayingSongInfo({ song }) {
+  const renderInfo = () => {
+    if (song) {
+      return (
+        <>
+          <Typography variant="h5" fontWeight={"bold"} ml={"10px"}>
+            {song.title}
+          </Typography>
+          <Typography variant="h6" fontStyle={"italic"} ml={"10px"}>
+            by {song.artist}
+          </Typography>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <Typography variant="h5" fontWeight={"bold"} ml={"10px"}>
+            Toy (Music Video Version)
+          </Typography>
+          <Typography variant="h6" fontStyle={"italic"} ml={"10px"}>
+            by Netta
+          </Typography>
+        </>
+      );
+    }
+  };
+  return renderInfo();
 }
 
 function SongCard({ trackId }) {
@@ -291,7 +267,7 @@ function Artist({ artistId }) {
       .then((response) => response.json())
       .then((data) => setArtist(data))
       .catch((error) => console.error(error));
-  }, []);
+  }, [artistId]);
 
   return (
     <div>
@@ -309,8 +285,15 @@ function Artist({ artistId }) {
   );
 }
 
-export function Home() {
+export function Home(props) {
   const [currentStack, setCurrentStack] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [nowPlayingSong, setNowPlayingSong] = useState(null);
+
+  const handleOptionClick = (songChoice) => {
+    setSearchTerm(songChoice.title);
+    setNowPlayingSong(songChoice);
+  };
 
   const handleBackClick = () => {
     setCurrentStack(1);
@@ -320,18 +303,172 @@ export function Home() {
     setCurrentStack(2);
   };
 
-  return (
-    <div>
-      {/* <Box
-        sx={{
-          height: "82%",
-          overflowY: "scroll",
-          //backgroundColor: "#e1e5eb",
-        }}
-      > */}
+  function SearchBar() {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [isTyping, setIsTyping] = useState(false);
 
+    const handleSearch = (event) => {
+      if (!isTyping) {
+        setIsTyping(true);
+      }
+      const searchTerm = event.target.value;
+      setSearchTerm(searchTerm);
+
+      fetch(`https://deezerdevs-deezer.p.rapidapi.com/search?q=${searchTerm}`, {
+        method: "GET",
+        headers: {
+          "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
+          "x-rapidapi-key":
+            "3a94049d35msh0452214c605abdep14fc02jsnea0066057b93",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const results = data.data.map((result) => {
+            return {
+              id: result.id,
+              title: result.title,
+              artist: result.artist.name,
+              albumCover: result.album ? result.album.cover_medium : null,
+              preview: result.preview,
+            };
+          });
+          setSearchResults(results);
+        })
+        .catch((error) => console.error(error));
+    };
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          paddingTop: "2rem",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <Autocomplete
+            id="search-box"
+            freeSolo
+            options={searchResults.map((result) => ({
+              id: result.id,
+              title: result.title,
+              artist: result.artist,
+              albumCover: result.albumCover,
+              preview: result.preview,
+            }))}
+            style={{ width: "500px" }}
+            getOptionLabel={(songChoice) =>
+              `${songChoice.title} by ${songChoice.artist}`
+            }
+            inputValue={searchTerm}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                margin="normal"
+                variant="filled"
+                InputProps={{
+                  ...params.InputProps,
+                  type: "search",
+                  style: { backgroundColor: "white" },
+                  startAdornment: !isTyping && (
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <span style={{ marginLeft: 5 }}>
+                        <SearchIcon style={{ marginRight: 10 }} />
+                        Search title, artist, keyword...
+                      </span>
+                    </div>
+                  ),
+                }}
+                onChange={(event) => handleSearch(event)}
+              />
+            )}
+            renderOption={(props, songChoice) => (
+              <li {...props} onClick={() => setSearchTerm(songChoice.title)}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                  {...props}
+                >
+                  <PlayIcon
+                    onClick={() => handleOptionClick(songChoice)}
+                    style={{ marginRight: 10 }}
+                    fontSize="large"
+                  />
+                  <Typography>
+                    {songChoice.title} by {songChoice.artist}
+                  </Typography>
+                </Box>
+              </li>
+            )}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "relative", height: "92vh", width: "100%" }}>
+      <img
+        className="deezer_logo_black"
+        src={deezer_black_logo}
+        style={{
+          position: "fixed",
+          bottom: "10px",
+          right: "10px",
+          width: "110px",
+          height: "auto",
+        }}
+      />
       <img src={logo} alt="Logo" width={"100%"} />
       <SearchBar />
+
+      <Typography
+        variant="h3"
+        fontWeight={"bold"}
+        sx={{ marginLeft: "10%", marginBottom: "4%", marginTop: "5%" }}
+      >
+        Now Playing
+      </Typography>
+      <Box
+        sx={{
+          width: "90%",
+          height: "250px",
+          backgroundColor: "#f5f5f5",
+          margin: "0 auto",
+          display: "flex",
+        }}
+      >
+        <Box
+          sx={{ flex: 0.75, backgroundColor: "gray" }}
+          id="NowPlayingSongCard"
+        >
+          <NowPlayingImage song={nowPlayingSong} />
+        </Box>
+        <Box
+          sx={{
+            flex: 2.25,
+          }}
+        >
+          <div style={{ marginLeft: "15px", marginTop: "25px" }}>
+            <NowPlayingSongInfo song={nowPlayingSong} />
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "45px",
+            }}
+          >
+            <NowPlayingAudio song={nowPlayingSong} />
+          </div>
+        </Box>
+      </Box>
       <Typography
         variant="h3"
         fontWeight={"bold"}
@@ -397,7 +534,6 @@ export function Home() {
         <br />
         <br />
       </>
-      {/* </Box> */}
     </div>
   );
 }
