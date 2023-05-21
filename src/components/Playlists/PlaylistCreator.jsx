@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Typography,
   Box,
@@ -13,84 +13,68 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import PlaylistArray from "./PlaylistArray";
+import { PlaylistArrayContext } from "../../state/PlaylistArray-context";
+import { PlaylistArrayActions } from "../../state/PlaylistArray.reducer";
 
-/* function newPlaylist(title, tracks) {
-  const playlist = {
-    title: title,
-    tracks: tracks,
-    render: function () {
-      return (
-        <div>
-          <h2>{this.title}</h2>
-          <ul>
-            {this.tracks.map((track, index) => (
-              <li key={index}>{track}</li>
-            ))}
-          </ul>
-        </div>
-      );
-    },
-  };
-  return playlist;
-}
- */
-function newPlaylist(title, tracks) {
-  return tracks;
-}
-
-/* function handleRemovePlaylistFromPlaylists(index) {
-  const newPlaylistArray = [...PlaylistArray];
-  newPlaylistArray.splice(index, 1);
-  setPlaylistArray(newPlaylist);
-} */
-
-export function CreatePlaylist(props) {
-  const [playlist, setPlaylist] = useState([]);
+export const CreatePlaylist = (props) => {
+  const [newPlaylist, setNewPlaylist] = useState([]);
   const [playlistTitle, setPlaylistTitle] = useState("");
+  const { PlaylistArrayState, PlaylistArrayDispatch } =
+    useContext(PlaylistArrayContext);
 
   const handlePlaylistTitle = (event) => {
     setPlaylistTitle(event.target.value);
   };
 
   function handleAddToPlaylist(item) {
-    setPlaylist([...playlist, item]);
+    setNewPlaylist([...newPlaylist, item]);
   }
 
   function handleRemoveFromPlaylist(index) {
-    const newPlaylist = [...playlist];
-    newPlaylist.splice(index, 1);
-    setPlaylist(newPlaylist);
+    const updatedPlaylist = [...newPlaylist];
+    updatedPlaylist.splice(index, 1);
+    setNewPlaylist(updatedPlaylist);
   }
 
   function handleMoveUp(index) {
     if (index > 0) {
-      const newPlaylist = [...playlist];
-      const temp = newPlaylist[index];
-      newPlaylist[index] = newPlaylist[index - 1];
-      newPlaylist[index - 1] = temp;
-      setPlaylist(newPlaylist);
+      const updatedPlaylist = [...newPlaylist];
+      const temp = updatedPlaylist[index];
+      updatedPlaylist[index] = updatedPlaylist[index - 1];
+      updatedPlaylist[index - 1] = temp;
+      setNewPlaylist(updatedPlaylist);
     }
   }
 
   function handleMoveDown(index) {
-    if (index < playlist.length - 1) {
-      const newPlaylist = [...playlist];
-      const temp = newPlaylist[index];
-      newPlaylist[index] = newPlaylist[index + 1];
-      newPlaylist[index + 1] = temp;
-      setPlaylist(newPlaylist);
+    if (index < newPlaylist.length - 1) {
+      const updatedPlaylist = [...newPlaylist];
+      const temp = updatedPlaylist[index];
+      updatedPlaylist[index] = updatedPlaylist[index + 1];
+      updatedPlaylist[index + 1] = temp;
+      setNewPlaylist(updatedPlaylist);
     }
   }
 
-  /* function handleSavePlaylist(playlistTitle, tracks) {
-    PlaylistArray.push(newPlaylist(playlistTitle, tracks));
-  } */
+  function RandomNumberGenerator() {
+    const num = Math.floor(Math.random() * 100) + 100;
+    console.log(num);
+    return num;
+  }
 
   function handleSavePlaylist(playlistTitle, tracks) {
-    PlaylistArray.push({ title: playlistTitle, tracks: tracks });
-    if (props.onSave) {
-      props.onSave();
+    const playlist = {
+      id: RandomNumberGenerator(),
+      title: playlistTitle,
+      tracks: tracks,
+    };
+    PlaylistArrayDispatch({
+      type: PlaylistArrayActions.ADD,
+      playlist: playlist,
+    });
+
+    if (playlist.onSave) {
+      playlist.onSave();
     }
   }
 
@@ -144,8 +128,11 @@ export function CreatePlaylist(props) {
             id="search-box"
             freeSolo
             options={searchResults.map((result) => ({
+              id: result.id,
               title: result.title,
               artist: result.artist,
+              albumCover: result.album ? result.album.cover_small : null,
+              preview: result.preview,
             }))}
             style={{ width: "500px" }}
             getOptionLabel={(songChoice) =>
@@ -207,7 +194,7 @@ export function CreatePlaylist(props) {
         <h2>Songs</h2>
         <Box sx={{ backgroundColor: "white", padding: "10px" }}>
           <List>
-            {playlist.map((item, index) => (
+            {newPlaylist.map((item, index) => (
               <React.Fragment key={item.id}>
                 <ListItem
                   secondaryAction={
@@ -231,11 +218,14 @@ export function CreatePlaylist(props) {
         </Box>
         <Button
           onClick={() => {
-            if (playlistTitle && playlist) {
-              handleSavePlaylist(playlistTitle, playlist);
+            if (playlistTitle && newPlaylist) {
+              handleSavePlaylist(playlistTitle, newPlaylist);
+            }
+            if (props.onSave) {
+              props.onSave();
             }
           }}
-          disabled={!playlistTitle || !playlist}
+          disabled={!playlistTitle || !newPlaylist}
           sx={{ marginLeft: "40%" }}
         >
           Save
@@ -243,4 +233,4 @@ export function CreatePlaylist(props) {
       </Box>
     </div>
   );
-}
+};

@@ -15,57 +15,22 @@ import logo from "../images/logo.png";
 import deezer_black_logo from "../images/deezer_black_logo.png";
 import PlayIcon from "@mui/icons-material/PlayCircleOutline";
 
-function FetchSongIdFromTitle({ songTitle }) {
-  const [songId, setSongId] = useState({});
-
-  useEffect(() => {
-    fetch(`https://deezerdevs-deezer.p.rapidapi.com/search?q=${songTitle}`, {
-      method: "GET",
-      headers: {
-        "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
-        "x-rapidapi-key": "3a94049d35msh0452214c605abdep14fc02jsnea0066057b93",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setSongId(data[0].id);
-      })
-      .catch((error) => console.log(error));
-  }, [songTitle]);
-  return songId;
-}
-
-function FetchSong({ title }) {
-  const [song, setSong] = useState({});
-  const songId = <FetchSongIdFromTitle songTitle={title} />;
-
-  useEffect(() => {
-    fetch(`https://deezerdevs-deezer.p.rapidapi.com/track/${songId}`, {
-      method: "GET",
-      headers: {
-        "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
-        "x-rapidapi-key": "3a94049d35msh0452214c605abdep14fc02jsnea0066057b93",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setSong(data);
-      })
-      .catch((error) => console.log(error));
-  }, [songId]);
-
-  return song;
-}
-
 function NowPlayingImage({ song }) {
   const renderImg = () => {
     if (song) {
-      return <img src={song.albumCover} alt={song.title} />;
+      return (
+        <img
+          src={song.albumCover}
+          alt={song.title}
+          style={{ width: "100%", height: "100%" }}
+        />
+      );
     } else {
       return (
         <img
           src="https://e-cdns-images.dzcdn.net/images/cover/ab0c27773900dc370917797a8f53d349/250x250-000000-80-0-0.jpg"
           alt="Toy Cover Image"
+          style={{ width: "100%", height: "100%" }}
         />
       );
     }
