@@ -9,7 +9,10 @@ export const PlaylistArrayActions = {
 export const PlaylistArrayReducer = (state, action) => {
   switch (action.type) {
     case PlaylistArrayActions.ADD: {
-      return { allPlaylists: [...state.allPlaylists, action.playlist] };
+      return {
+        ...state,
+        allPlaylists: [...state.allPlaylists, action.playlist],
+      };
     }
     case PlaylistArrayActions.REMOVE: {
       const newArray = cloneDeep(state.allPlaylists);

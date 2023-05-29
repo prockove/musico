@@ -13,8 +13,10 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+
 import { PlaylistArrayContext } from "../../state/PlaylistArray-context";
 import { PlaylistArrayActions } from "../../state/PlaylistArray.reducer";
+import { PlaylistArrayProvider } from "../../state/PlaylistArray.provider";
 
 export const CreatePlaylist = (props) => {
   const [newPlaylist, setNewPlaylist] = useState([]);
@@ -56,27 +58,42 @@ export const CreatePlaylist = (props) => {
     }
   }
 
-  function RandomNumberGenerator() {
+  /*   function RandomNumberGenerator() {
     const num = Math.floor(Math.random() * 100) + 100;
     console.log(num);
     return num;
-  }
+  } */
 
-  function handleSavePlaylist(playlistTitle, tracks) {
+  /*  function handleSavePlaylist(playlistTitle, tracks) {
     const playlist = {
       id: RandomNumberGenerator(),
       title: playlistTitle,
       tracks: tracks,
     };
+
     PlaylistArrayDispatch({
       type: PlaylistArrayActions.ADD,
       playlist: playlist,
     });
 
+    console.log("Save Playlist Dispatch " + playlist);
+    console.log("allPlaylists onSave " + PlaylistArrayState);
+
     if (playlist.onSave) {
-      playlist.onSave();
+      playlist.onSave(playlist);
     }
-  }
+  } */
+  const handleSaveClick = () => {
+    if (playlistTitle && newPlaylist.length > 0) {
+      if (props.onSave) {
+        props.onSave(newPlaylist);
+      }
+    }
+  };
+
+  /* const handleCreateClick = () => {
+    props.onCreate();
+  }; */
 
   function SearchBar() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -217,14 +234,7 @@ export const CreatePlaylist = (props) => {
           </List>
         </Box>
         <Button
-          onClick={() => {
-            if (playlistTitle && newPlaylist) {
-              handleSavePlaylist(playlistTitle, newPlaylist);
-            }
-            if (props.onSave) {
-              props.onSave();
-            }
-          }}
+          onClick={handleSaveClick}
           disabled={!playlistTitle || !newPlaylist}
           sx={{ marginLeft: "40%" }}
         >

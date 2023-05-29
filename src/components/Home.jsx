@@ -295,7 +295,7 @@ export function Home(props) {
               id: result.id,
               title: result.title,
               artist: result.artist.name,
-              albumCover: result.album ? result.album.cover_medium : null,
+              albumCover: result.album.cover_medium,
               preview: result.preview,
             };
           });
