@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import {
   Typography,
-  Card,
   Box,
   List,
   ListItem,
@@ -10,12 +9,16 @@ import {
   Avatar,
   Divider,
   TextField,
+  Popper,
+  Button,
 } from "@mui/material";
 import PlayIcon from "@mui/icons-material/PlayCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
+import CloseIcon from "@mui/icons-material/Close";
 import deezer_color_logo from "../../images/deezer_color_logo.png";
 import { useParams } from "react-router-dom";
 import { PlaylistArrayContext } from "../../state/PlaylistArray-context";
+import { PlaylistArrayActions } from "../../state/PlaylistArray.reducer";
 
 export const Playlist = () => {
   const { playlistId } = useParams();
@@ -36,16 +39,28 @@ export const Playlist = () => {
     }
   }, [playlist]);
 
-  //const [newPlaylistTitle, setNewPlaylistTitle] = useState("");
+  const [playlistTitle, setPlaylistTitle] = useState("");
 
-  /* const handleRenamePlaylist = (playlistId, newTitle) => {
-    playlistDispatch({
-      type: playlistArrayActions.RENAME,
-      playlist: { id: playlistId },
-      newTitle: newTitle,
-    });
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const handleClick = (event) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget);
   };
- */
+  const open = Boolean(anchorEl);
+  const popperId = open ? "simple-popper" : undefined;
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleRenamePlaylist = () => {
+    PlaylistArrayDispatch({
+      type: PlaylistArrayActions.RENAME,
+      playlist: playlist,
+      newTitle: playlistTitle,
+    });
+
+    handlePopoverClose();
+  };
 
   function NowPlayingImage() {
     return (
@@ -151,7 +166,49 @@ export const Playlist = () => {
         }}
       >
         {playlist.title}
-        <PlayIcon sx={{ fontSize: "60px", marginLeft: "10px" }} />
+        <EditIcon
+          sx={{ fontSize: "30px", marginLeft: "15px", marginBottom: "10px" }}
+          onClick={handleClick}
+        />
+        <Popper
+          id={popperId}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handlePopoverClose}
+        >
+          <Box
+            backgroundColor={"white"}
+            padding={"20px"}
+            sx={{
+              border: "1px solid black",
+              borderRadius: "10px",
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "flex-start",
+              position: "relative",
+            }}
+          >
+            <CloseIcon
+              onClick={handlePopoverClose}
+              sx={{
+                position: "absolute",
+                top: "15px",
+                right: "15px",
+              }}
+              fontSize="small"
+            />
+
+            <TextField
+              value={playlistTitle}
+              onChange={(e) => setPlaylistTitle(e.target.value)}
+              variant="standard"
+              sx={{ marginTop: "15px" }}
+            ></TextField>
+            <Button onClick={handleRenamePlaylist} sx={{ marginTop: "15px" }}>
+              Rename
+            </Button>
+          </Box>
+        </Popper>
       </Typography>
 
       <NowPlayingBox
@@ -176,20 +233,6 @@ export const Playlist = () => {
         }}
       >
         <span>Up Next</span>
-        {/* <div style={{ display: "flex" }}>
-            <TextField
-              value={newPlaylistTitle}
-              label="Rename"
-              variant="standard"
-              onChange={(e) => setNewPlaylistTitle(e.target.value)}
-            ></TextField>
-            <EditIcon
-              sx={{ fontSize: "30px", marginRight: "550px" }}
-              onClick={() =>
-                handleRenamePlaylist(playlist.id, newPlaylistTitle)
-              }
-            />
-          </div> */}
       </Typography>
 
       <Box sx={{ backgroundColor: "white", padding: "10px" }}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import {
   Typography,
   Card,
@@ -26,12 +26,6 @@ import { chunk } from "lodash";
 import { useNavigate } from "react-router-dom";
 import { PlaylistArrayContext } from "../../state/PlaylistArray-context";
 import { PlaylistArrayActions } from "../../state/PlaylistArray.reducer";
-/* import {
-  UpbeatPlaylist,
-  SlowSongs,
-  HeartSongs,
-  PartyPlaylist,
-} from "./DefaultPlaylists"; */
 
 export const MyPlaylists = () => {
   const navigate = useNavigate();
@@ -40,10 +34,7 @@ export const MyPlaylists = () => {
     useContext(PlaylistArrayContext);
   const [playlistTitle, setPlaylistTitle] = useState("");
   const [playlistTracks, setPlaylistTracks] = useState([]);
-
-  const handlePlaylistTitle = (event) => {
-    setPlaylistTitle(event.target.value);
-  };
+  const [playlistToRemove, setPlaylistToRemove] = useState("");
 
   function handleAddTrackToPlaylist(item) {
     setPlaylistTracks([...playlistTracks, item]);
@@ -102,6 +93,13 @@ export const MyPlaylists = () => {
     handlePopoverClose();
   };
 
+  const handleRemovePlaylistFromPlaylists = () => {
+    PlaylistArrayDispatch({
+      type: PlaylistArrayActions.REMOVE,
+      playlist: playlistToRemove,
+    });
+  };
+
   function RandomNumberGenerator() {
     const num = Math.floor(Math.random() * 100) + 100;
     return num;
@@ -128,7 +126,7 @@ export const MyPlaylists = () => {
               value={playlistTitle}
               label="Playlist Title"
               variant="standard"
-              onChange={handlePlaylistTitle}
+              onChange={(event) => setPlaylistTitle(event.target.value)}
             />
           </Box>
 
@@ -356,23 +354,45 @@ export const MyPlaylists = () => {
             {row.map((playlist, playlistIndex) => (
               <Card
                 key={playlistIndex}
-                onClick={() => handlePlaylistClick(playlist.id)}
                 sx={{
                   backgroundColor: "#f5f5f5",
                   height: "250px",
                   width: "200px",
                 }}
               >
-                <CardContent sx={{ marginTop: "20px" }}>
-                  {/* <DeleteIcon onClick={handleRemovePlaylist} /> */}
-                  <Typography variant="h5">{playlist.title}</Typography>
+                <CardContent
+                  sx={{
+                    position: "relative",
+                  }}
+                >
+                  <DeleteIcon
+                    sx={{
+                      position: "absolute",
+                      top: 10,
+                      right: 10,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setPlaylistToRemove(playlist);
+                      handleRemovePlaylistFromPlaylists();
+                    }}
+                  />
+                  <Typography
+                    variant="h5"
+                    sx={{ marginBottom: "10px", marginTop: "25px" }}
+                  >
+                    {playlist.title}
+                  </Typography>
                   <Typography variant="h6">
                     {playlist.tracks.length} Songs
                   </Typography>
+                  <CardActions sx={{ justifyContent: "center" }}>
+                    <PlayIcon
+                      sx={{ fontSize: "85px" }}
+                      onClick={() => handlePlaylistClick(playlist.id)}
+                    />
+                  </CardActions>
                 </CardContent>
-                <CardActions>
-                  <PlayIcon sx={{ fontSize: "85px" }} />
-                </CardActions>
               </Card>
             ))}
           </Stack>
